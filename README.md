@@ -217,4 +217,32 @@ ggplot(ratingSales_wide, aes(x = User_Score)) +
   xlim(50, 96) +
   theme(legend.position = "top", legend.text = element_text(size = 13))
 
+colors <- c('#008DB8', '#00AAAA', '#00C69C')
 
+# Sony Playstation
+sony_data <- aggregate(dummy_count ~ Genre, data = url_data_platform[url_data_platform$Platform_General == 'Sony_Playstation', ], sum)
+par(mfrow=c(1, 2), mar=c(5, 5, 4, 2))
+pie(sony_data$dummy_count,
+    labels = sony_data$Genre,
+    col = colors,
+    main = 'Pie Chart of Genre Distribution of Playstation',
+    init.angle = 90,
+    radius = 1)
+
+# Microsoft Xbox
+xbox_data <- aggregate(dummy_count ~ Genre, data = url_data_platform[url_data_platform$Platform_General == 'Microsoft_Xbox', ], sum)
+pie(xbox_data$dummy_count,
+    labels = xbox_data$Genre,
+    col = colors,
+    main = 'Pie Chart of Genre Distribution of Xbox',
+    init.angle = 90,
+    radius = 1)
+
+# Nintendo
+nintendo_data <- aggregate(dummy_count ~ Genre, data = url_data_platform[url_data_platform$Platform_General == 'Nintendo', ], sum)
+pie(nintendo_data$dummy_count,
+    labels = nintendo_data$Genre,
+    col = colors,
+    main = 'Pie Chart of Genre Distribution of Nintendo',
+    init.angle = 90,
+    radius = 1)
