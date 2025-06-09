@@ -98,6 +98,11 @@ ggplot(url, aes(x = Year_of_Release)) +
   scale_x_discrete(breaks = seq.default(min(url$Year_of_Release), max(url$Year_of_Release), by = 2)+
   labs(x = Year_of_Release, y = Count_of_Games, title = Total_Count_of_Release_Games_per_Year)
 
+  yearlySales <- url%>%
+     group_by(Year_of_Release, Platform_General) %>%
+     summarize(Global_Sales = sum(Global_Sales))
+
+
 
 4. Statistical Analysis
 
