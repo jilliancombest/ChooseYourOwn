@@ -97,3 +97,124 @@ ggplot(url, aes(x = Year_of_Release)) +
   geom_bar(fill = BuPu) +
   scale_x_discrete(breaks = seq.default(min(url$Year_of_Release), max(url$Year_of_Release), by = 2)+
   labs(x = Year_of_Release, y = Count_of_Games, title = Total_Count_of_Release_Games_per_Year)
+
+
+4. Statistical Analysis
+
+url_platform <- url %>%
+  filter(Platform_General %in% c('Sony_Playstation', 'Microsoft_Xbox', 'Nintendo')) %>%
+  mutate(dummy_count = as.numeric(1),
+         User_Score = as.numeric(User_Score)) %>%
+  summary()
+
+
+url_platform$`Global_Sales`[c(0, 0.01, 0.25, 0.5, 0.75, 0.95, 1)]
+
+url_platform <- url_platform[url_platform$Global_Sales < quantile(url_platform$Global_Sales, 0.95)]
+
+quantile(url_platform$Global_Sales, c(0, 0.01, 0.25, 0.5, 0.75, 0.95, 1))
+
+
+# First group by the data
+
+urlgc <- urla_platform %>%
+  group_by(Year_of_Release, Platform_General, Platform)
+
+# Second add counts according to group_by info and then join with the statistical information required
+
+counts <- vdpg %>%
+  summarise(counts = n()) %>%
+  as.data.frame()
+
+global_sales <- vdpg %>%
+  summarise(Global_Sales_M = sum(Global_Sales)) %>%
+  as.data.frame()
+
+url_df_pf_grouped <- merge(counts, global_sales, by = c("Year_of_Release", "Platform_General", "Platform"))
+
+url_df_pf_grouped$GS_Amount_per_Game <- url_df_pf_grouped$Global_Sales_M / url_df_pf_grouped$counts
+url_df_pf_grouped[] <- lapply(url_df_pf_grouped, function(x) as.numeric(as.character(x)))
+
+
+url_df_pf_grouped %>%
+  filter(Platform_General == 'Sony_Playstation') %>%
+  summary()
+
+url_df_pf_grouped %>%
+  filter(Platform_General == 'Microsoft_Xbox') %>%
+  summary()
+
+url_df_pf_grouped %>%
+  filter(Platform_General == 'Nintendo') %>%
+  summary()
+
+
+# Make a custom palette with platform colors
+pal <- list(Sony_Playstation = "#6495ED", Microsoft_Xbox = "#F08080", Nintendo = "Green")
+
+# Show the survival proability as a function of platforms
+g <- ggplot(url_df_pf_grouped, aes(x = Year_of_Release, y = GS_Amount_per_Game, color = Platform_General)) +
+  geom_point(position = position_jitter(height = 0.05)) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ Platform_General) +
+  scale_color_manual(values = pal)
+
+# Use more informative axis labels than are provided by default
+g <- g + labs(x = "Year of Release", y = "Global Sales per Game Released (M#)")
+g <- g + ggtitle("GLOBAL SALES PER GAME FOR EACH PLATFORM") + theme(plot.title = element_text(size = 15, vjust = 1.5))
+
+
+# Make a custom palette with platform colors
+pal <- list(Sony_Playstation = "#6495ED", Microsoft_Xbox = "#F08080", Nintendo = "Green")
+
+# Show the survival proability as a function of platforms
+g <- ggplot(url_df_pf_grouped, aes(x = Year_of_Release, y = counts, color = Platform_General)) +
+  geom_point(position = position_jitter(height = 0.05)) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ Platform_General) +
+  scale_color_manual(values = pal)
+
+
+# Use more informative axis labels than are provided by default
+ggplot2::ggtitle("GAMES RELEASED PER YEAR FOR EACH PLATFORM", size = 15) +
+  xlab("Year of Release") +
+  ylab("Games Released per Year")
+
+# Make a custom palette with platform colors
+pal <- c(Sony_Playstation = "#6495ED", Microsoft_Xbox = "#F08080", Nintendo = "Green")
+
+# Show the survival proability as a function of platforms
+ggplot(vgs_df_pf_grouped, aes(x = Year_of_Release, y = Global_Sales.M., color = Platform_General, group = Platform_General)) +
+  geom_point(position = position_jitter(width = 0, height = 0.05)) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ Platform_General) +
+  scale_color_manual(values = pal)
+
+# Use more informative axis labels than are provided by default
+ggplot(data, aes(x = Year_of_Release, y = Global_Sales_per_Year)) +
+  geom_line() +
+  labs(x = "Year of Release", y = "Global Sales per Year (M#)") +
+  ggtitle("GLOBAL GAME SALES PER YEAR FOR EACH PLATFORM") +
+  theme(plot.title = element_text(size = 15, vjust = 1.05))
+
+url_platform$Platform_General <- as.factor(url_data_platform$Platform_General)
+url_data_platform$User_Score <- as.numeric(url_data_platform$User_Score)
+
+ratingSales <- url_platform %>%
+  group_by(User_Score, Platform_General) %>%
+  summarize(Global_Sales = sum(Global_Sales))
+
+ratingSales_wide <- ratingSales %>%
+  pivot_wider(names_from = Platform_General, values_from = Global_Sales)
+
+ggplot(ratingSales_wide, aes(x = User_Score)) +
+  geom_bar(aes(y = ``, fill = `Platform_General`), stat = "identity", position = "stack") +
+  scale_fill_brewer(palette = "Greens") +
+  theme_dark() +
+  labs(title = "Stacked Barplot of Sales per Critic Score type of top 3 Platforms",
+       x = "User Score",
+       y = "Sales") +
+  xlim(50, 96) +
+  theme(legend.position = "top", legend.text = element_text(size = 13))
+
+
